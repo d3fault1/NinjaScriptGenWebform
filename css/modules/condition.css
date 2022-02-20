@@ -1,0 +1,18 @@
+.condition-row-object {
+    width: 40%;
+}
+
+.condition-row-cmp {
+    width: 10%;
+}
+
+.condition-row-btn {
+    width: 5%;
+}
+
+.condition-options {
+    overflow: auto;
+    height: 320px;
+    padding: 20px;
+    border-color: #ddd;
+}

@@ -1,0 +1,17 @@
+.webform {
+    margin-top: 30px;
+    padding: 8px 8px;
+}
+
+.webform-section {
+    display: none;
+}
+
+.webform-section.show {
+    display: block;
+    height: calc(100vh - 320px);
+}
+
+.webform-section h4 {
+    padding-bottom: 30px;
+}
