@@ -1029,7 +1029,7 @@
             case 'param-intermediate':
                 return 'Intermediate';
             case 'param-deviation-val':
-                return 'Deviation';
+                return 'DeviationValue';
             case 'param-high-low':
                 return 'UseHighLow';
             case 'param-dev-type':
