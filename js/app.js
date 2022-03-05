@@ -699,7 +699,10 @@
         e.preventDefault();
 
         var id = +($(this).attr('id').split('')[1]);
-        if (compares.length > id) compares.splice(id, 1);
+        if (compares.length > id) {
+            compares.splice(id, 1);
+            compares = JSON.parse(JSON.stringify(compares));
+        }
         $(this).closest('tr').remove();
     }
 
@@ -746,8 +749,9 @@
                 operation['$type'] = 'NinjaScriptGenerator.Long, NinjaScriptGenerator';
                 operation['Action'] = 0;
                 operation['Quantity'] = 0;
-                operations.push(operation);
-                conditionset['Compares'] = compares.length > 0 ? JSON.parse(JSON.stringify(compares)) : null;
+                if (operations.length > pos) operations[pos] = operation;
+                else operations.push(operation);
+                conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
                 conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
@@ -760,8 +764,9 @@
                 operation['$type'] = 'NinjaScriptGenerator.Long, NinjaScriptGenerator';
                 operation['Action'] = 1;
                 operation['Quantity'] = 0;
-                operations.push(operation);
-                conditionset['Compares'] = compares.length > 0 ? JSON.parse(JSON.stringify(compares)) : null;
+                if (operations.length > pos) operations[pos] = operation;
+                else operations.push(operation);
+                conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
                 conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
@@ -774,8 +779,9 @@
                 operation['$type'] = 'NinjaScriptGenerator.Short, NinjaScriptGenerator';
                 operation['Action'] = 0;
                 operation['Quantity'] = 0;
-                operations.push(operation);
-                conditionset['Compares'] = compares.length > 0 ? JSON.parse(JSON.stringify(compares)) : null;
+                if (operations.length > pos) operations[pos] = operation;
+                else operations.push(operation);
+                conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
                 conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
@@ -788,8 +794,9 @@
                 operation['$type'] = 'NinjaScriptGenerator.Short, NinjaScriptGenerator';
                 operation['Action'] = 1;
                 operation['Quantity'] = 0;
-                operations.push(operation);
-                conditionset['Compares'] = compares.length > 0 ? JSON.parse(JSON.stringify(compares)) : null;
+                if (operations.length > pos) operations[pos] = operation;
+                else operations.push(operation);
+                conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
                 conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
@@ -892,6 +899,7 @@
                     }
                 }
             });
+            if (set['Compares'].length == 0) set['Compares'] = null;
         });
         form_json['Inputs'] = inputs.length > 0 ? inputs : null;
         form_json['Variables'] = variables.length > 0 ? variables : null;
