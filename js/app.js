@@ -8,7 +8,7 @@
                 <div class="form-field">
                     <label class="form-label">Bars Ago</label>
                     <input type="number" id="bars-ago" class="form-input"
-                        placeholder="Enter Bars Ago">
+                        placeholder="Enter Bars Ago" value="0">
                 </div>
             </div>
         </div>
@@ -621,13 +621,17 @@
     var operations = [];
     var targetactions = [];
 
+    var condition_indexes = {};
+
     var stepStore = -1;
     var currentStep = 1;
     var maxStep = 7;
 
-    function webForm() {
+    //Entry point (onload funciton)
+    function webForm() { 
 
         generateBaseJson();
+        setupConditionIndexes();
 
         //#region Extras   
         // $('#name').blur(function (e) {
@@ -652,7 +656,8 @@
 
     }
 
-    function onNextClick(e) {
+    // Next/OK button click
+    function onNextClick(e) { 
         e.preventDefault();
 
         var resetCompares = true;
@@ -672,7 +677,8 @@
         }
     }
 
-    function onPrevClick(e) {
+    //Prev/Cancel button click
+    function onPrevClick(e) { 
         e.preventDefault();
 
         var resetCompares = true;
@@ -687,7 +693,8 @@
         initializeStep(currentStep, resetCompares);
     }
 
-    function onConditionAddClick(e) {
+    //Add condition button click
+    function onConditionAddClick(e) { 
         e.preventDefault();
 
         stepStore = currentStep;
@@ -695,7 +702,8 @@
         initializeStep(currentStep, false);
     }
 
-    function onConditionRemoveClick(e) {
+    //Condidion Cross button click
+    function onConditionRemoveClick(e) { 
         e.preventDefault();
 
         var id = +($(this).attr('id').split('')[1]);
@@ -706,12 +714,14 @@
         $(this).closest('tr').remove();
     }
 
-    function submitJson() {
+    //Submit the data to the backend (.php)
+    function submitJson() { 
         $('#main-data-input').val(JSON.stringify(form_json));	
         $('#webform').submit();
     }
 
-    function serializeData(step) {
+    //Sereialize each step and store it in main from_json object
+    function serializeData(step) { 
         switch (step) {
             case 0:
                 serializeCompares();
@@ -733,17 +743,17 @@
             case 3:
                 var targetaction = {};
                 targetaction['TargetType'] = 1;
-                targetaction['Type'] = $('#stoploss-type').val();
+                targetaction['Type'] = $('#stoploss-type').val(); //Can be set to disabled to ignore
                 targetaction['Value'] = $('#stoploss-value').val();
                 targetactions.push(targetaction);
                 var targetaction = {};
                 targetaction['TargetType'] = 0;
-                targetaction['Type'] = $('#profit-type').val();
+                targetaction['Type'] = $('#profit-type').val(); //Can be set to disabled to ignore
                 targetaction['Value'] = $('#profit-value').val();
                 targetactions.push(targetaction);
                 break;
             case 4:
-                var pos = step - 4;
+                var pos = condition_indexes['enter-long'];
                 var conditionset = {};
                 var operation = {};
                 operation['$type'] = 'NinjaScriptGenerator.Long, NinjaScriptGenerator';
@@ -753,12 +763,12 @@
                 else operations.push(operation);
                 conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
-                conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
+                conditionset['ConditionType'] = $(`#enter-long-condition-type`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
                 else conditionsets.push(conditionset);
                 break;
             case 5:
-                var pos = step - 4;
+                var pos = condition_indexes['exit-long'];
                 var conditionset = {};
                 var operation = {};
                 operation['$type'] = 'NinjaScriptGenerator.Long, NinjaScriptGenerator';
@@ -768,12 +778,12 @@
                 else operations.push(operation);
                 conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
-                conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
+                conditionset['ConditionType'] = $(`#exit-long-condition-type`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
                 else conditionsets.push(conditionset);
                 break;
             case 6:
-                var pos = step - 4;
+                var pos = condition_indexes['enter-short'];
                 var conditionset = {};
                 var operation = {};
                 operation['$type'] = 'NinjaScriptGenerator.Short, NinjaScriptGenerator';
@@ -783,12 +793,12 @@
                 else operations.push(operation);
                 conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
-                conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
+                conditionset['ConditionType'] = $(`#enter-short-condition-type`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
                 else conditionsets.push(conditionset);
                 break;
             case 7:
-                var pos = step - 4;
+                var pos = condition_indexes['exit-short'];
                 var conditionset = {};
                 var operation = {};
                 operation['$type'] = 'NinjaScriptGenerator.Short, NinjaScriptGenerator';
@@ -798,7 +808,7 @@
                 else operations.push(operation);
                 conditionset['Compares'] = JSON.parse(JSON.stringify(compares));
                 conditionset['Operations'] = JSON.parse(JSON.stringify(operations));
-                conditionset['ConditionType'] = $(`#condition-type-${currentStep}`).val();
+                conditionset['ConditionType'] = $(`#exit-short-condition-type`).val();
                 if (conditionsets.length > pos) conditionsets[pos] = conditionset;
                 else conditionsets.push(conditionset);
                 break;
@@ -807,7 +817,8 @@
         }
     }
 
-    function serializeCompares() {
+    //Serialize and parse the compare data // Needs change regarding variable reference
+    function serializeCompares() { 
         var compare = {};
         var firstobject = {};
         var secondobject = {};
@@ -831,7 +842,16 @@
         compares.push(compare);
     }
 
-    function generateBaseJson() {
+    //condition array index return
+    function setupConditionIndexes() { 
+        condition_indexes['enter-long'] = 0;
+        condition_indexes['exit-long'] = 1;
+        condition_indexes['enter-short'] = 2;
+        condition_indexes['exit-short'] = 3;
+    }
+
+    //Construct base json structure, called at the very first
+    function generateBaseJson() { 
         form_json['Name'] = "";
         form_json['Description'] = "";
         form_json['Defaults'] = defaults;
@@ -842,7 +862,8 @@
         form_json['TargetActions'] = targetactions;
     }
 
-    function finalizeJson() {
+    // Needs modification for variable reference
+    function finalizeJson() { 
         inputs.length = 0;
         variables.length = 0;
         $(conditionsets).each(function (index, set) {
@@ -851,7 +872,7 @@
                 var secondobject = comp['SecondObject'];
                 var firstcompare = firstobject['$type'].split(',')[0].split('.')[1];
                 var secondcompare = secondobject['$type'].split(',')[0].split('.')[1];
-                if (firstcompare == 'Input') {
+                if (firstcompare == 'InputReference') {
                     var input = firstobject;
                     delete input['$type'];
                     var ind = inputs.indexOf(item => item.Name == input.Name);
@@ -863,7 +884,7 @@
                     }
                 }
 
-                if (secondcompare == 'Input') {
+                if (secondcompare == 'InputReference') {
                     var input = secondobject;
                     delete input['$type'];
                     var ind = inputs.find(item => item.Name == input.Name);
@@ -875,7 +896,7 @@
                     }
                 }
 
-                if (firstcompare == 'Variable') {
+                if (firstcompare == 'VariableReference') {
                     var variable = firstobject;
                     delete variable['$type'];
                     var ind = variables.find(item => item.Name == input.Name);
@@ -887,7 +908,7 @@
                     }
                 }
 
-                if (secondcompare == 'Variable') {
+                if (secondcompare == 'VariableReference') {
                     var variable = secondobject;
                     delete variable['$type'];
                     var ind = variables.find(item => item.Name == input.Name);
@@ -905,11 +926,13 @@
         form_json['Variables'] = variables.length > 0 ? variables : null;
     }
 
-    function finalizeStep(step) {
+    //happens everytime next button is clicked
+    function finalizeStep(step) { 
         serializeData(step);
     }
 
-    function initializeStep(step, resetCompares) {
+    //happens before the next step is shown. To setup the next step based on previously accquired data
+    function initializeStep(step, resetCompares) { 
         switch (step) {
             case 0:
                 break;
@@ -962,14 +985,16 @@
         showWebformStep(step);
     }
 
-    function updateStepData(step) {
+    //Construct/Update the condition list
+    function updateStepData(step) { 
         if (conditionsets.length > step - 4) {
             compares = JSON.parse(JSON.stringify(conditionsets[step - 4]['Compares']));
         }
         else compares = [];
     }
 
-    function updateCompareTable(compArr, step) {
+    //Construct/Update the condition list view
+    function updateCompareTable(compArr, step) { 
         $(`#table-${step}`).empty();
         $(compArr).each(function (index, value) {
             var fname = value['FirstObject']['$type'].split(',')[0].split('.')[1];
@@ -998,7 +1023,8 @@
         });
     }
 
-    function getKeyName(id, compareType) {
+    //get keyname for json
+    function getKeyName(id, compareType) { 
         switch (id) {
             case 'bars-ago':
                 return 'BarsAgo';
@@ -1080,11 +1106,13 @@
         }
     }
 
-    function validateStep(stepNumber) {
+    //Step validation (currently not used)
+    function validateStep(stepNumber) { 
         return true;
     }
 
-    function mainCondition(selector) {
+    //View condition update fields based on selected compare object
+    function mainCondition(selector) { 
         var compare;
         if (selector === '#first-object-options') compare = '#first-compare';
         else if (selector === '#second-object-options') compare = '#second-compare';
@@ -1218,7 +1246,8 @@
 
     }
 
-    function typeCondition() {
+    //update variable type field in compare page
+    function typeCondition() { 
 
         $('#var-type').on('change', function (e) {
 
@@ -1233,7 +1262,8 @@
 
     }
 
-    function showWebformStep() {
+    //Show next step
+    function showWebformStep() { 
         $('.webform-section').removeClass('show');
         $(`#step-${currentStep}`).addClass('show');
 
@@ -1244,11 +1274,13 @@
         }
     }
 
-    function showFieldError(field) {
+    //not used (for validation failure)
+    function showFieldError(field) { 
         field.closest('.form-field').addClass('error');
     }
 
-    function removeFieldError(field) {
+    //not used (clear error values)
+    function removeFieldError(field) { 
         field.closest('.form-field').removeClass('error');
     }
 
